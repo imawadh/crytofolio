@@ -4,7 +4,7 @@ const User = require("../models/User"); //we select the table
 
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-const jwtSecret = "abcdefghijklmnopqrstuvwxyz";
+const jwtSecret = process.env.JWT_SECRET;
 const { fetchuser } = require("../middleware/fetchuser");
 
 router.post("/dashboard", fetchuser, async (req, res) => {

@@ -1,78 +1,80 @@
 import { Link, useNavigate } from "react-router-dom";
 
+import config from "../config";
+
 export default function Nav({ open }) {
   const navigate = useNavigate();
-  let json;
+  const BASE_URL = config.BASE_URL;
 
   const handleDashboard = async () => {
-    console.log(localStorage.authToken);
-    const response = await fetch("https://cryptofolio-backstack-aiwo.onrender.com/dashboard/dashboard", {
-      method: "POST",
-      body: JSON.stringify({ Token: localStorage.authToken }),
-      mode: "cors",
-      headers: {
-        "Content-type": "application/json",
-      },
-
-      header: "Access-Control-Allow-Origin: *",
-    });
-    json = await response.json();
-    console.log("response we get");
-    console.log(json);
-    navigate("/dashboard", { state: { id: json.id } });
+    try {
+        const response = await fetch(`${BASE_URL}/dashboard/dashboard`, {
+            method: "POST",
+            body: JSON.stringify({ Token: localStorage.authToken }),
+            mode: "cors",
+            headers: {
+                "Content-type": "application/json",
+            },
+        });
+        const json = await response.json();
+        navigate("/dashboard", { state: { id: json.id } });
+    } catch (err) {
+        console.error("Dashboard navigation error:", err);
+    }
   };
 
   const handlelogout = () => {
     localStorage.removeItem("authToken");
     navigate("/");
-    console.log("loggedout");
   };
 
   return (
-    <div className="fixed w-screen z-30">
-      <div>
-        <ul className="flex justify-between bg-[#131722] h-[70px] text-white w-[100%] p-5">
-          <div>
-            <li className="text-[15px] sm:text-[18px] md:text-2xl font-bold  text-white  ">
-              <Link to="/">CryptoFolio</Link>
-            </li>
-          </div>
-          <div className="text-[20px] font-bold  text-white ">
+    <div className="fixed w-full z-50 top-4 px-4 sm:px-6 lg:px-8">
+      <nav className="max-w-7xl mx-auto glass-card flex justify-between items-center h-[70px] px-6">
+          
+        {/* Logo */}
+        <div className="flex-shrink-0">
+            <Link to="/" className="text-2xl md:text-3xl font-extrabold tracking-wide">
+                <span className="text-white">Crypto</span>
+                <span className="text-gradient">Folio</span>
+            </Link>
+        </div>
+
+        {/* Links */}
+        <div className="flex items-center space-x-6">
             {!localStorage.getItem("authToken") ? (
-              <div className=" flex">
-                <li className="mx-2 text-[15px] sm:text-[18px] md:text-xl">
-                  <button
-                    onClick={() => {
-                      open[0](true);
-                    }}
-                  >
-                    SignIn
-                  </button>
-                </li>
-                <li className="mx-2 text-[15px] sm:text-[18px] md:text-xl">
-                  <button
-                    onClick={() => {
-                      open[1](true);
-                    }}
-                  >
-                    SignUp
-                  </button>
-                </li>
-              </div>
+              <>
+                <button
+                    onClick={() => open[0](true)}
+                    className="nav-link text-lg hidden sm:block"
+                >
+                    Sign In
+                </button>
+                <button
+                    onClick={() => open[1](true)}
+                    className="btn-primary text-sm md:text-base"
+                >
+                    Get Started
+                </button>
+              </>
             ) : (
-              <div className=" flex text-[15px] sm:text-[18px] md:text-xl">
-                <li className="mx-2">
-                  <button onClick={handleDashboard}>Dashboard</button>
-                </li>
-                <li className="mx-2">
-                  <button onClick={handlelogout}>SignOut</button>
-                </li>
-              </div>
+              <>
+                <button 
+                    onClick={handleDashboard}
+                    className="nav-link text-lg"
+                >
+                    Dashboard
+                </button>
+                <button 
+                    onClick={handlelogout}
+                    className="btn-secondary text-sm md:text-base border-red-500/30 hover:border-red-500 hover:bg-red-500/10 text-red-100"
+                >
+                    Sign Out
+                </button>
+              </>
             )}
-          </div>
-        </ul>
-      </div>
-      {/* {open && <LoginModal closemod={Open}/>} */}
+        </div>
+      </nav>
     </div>
   );
 }

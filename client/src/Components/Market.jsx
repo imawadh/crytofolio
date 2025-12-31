@@ -1,106 +1,135 @@
-import React from "react";
-import Nav from "./Nav";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { useState } from "react";
-import { useEffect } from "react";
-import { Link } from "react-router-dom";
-import Footer from "./Footer";
+import { Link, useLocation } from "react-router-dom"; 
 
 export default function Market() {
-  const url =
-    "https://api.coingecko.com/api/v3/coins/markets?vs_currency=inr&order=market_cap_desc&per_page=100&page=1&sparkline=true";
-
+  const location = useLocation();
   const [info, setinfo] = useState([]);
-
-  useEffect(() => {
-    axios
-      .get(url, {
-        AccessControlAllowMethods: "GET, DELETE, HEAD, OPTIONS",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        method: "GET",
-        AccessControlAllowOrigin: "*",
-
-        headers: { "Content-Type": "application/json" },
-      })
-      .then((response) => {
-        setinfo(response.data);
-      });
-  }, []);
-
-  const getFilteredItem = (query, item) => {
-    if (!query) {
-      return item;
-    }
-
-    return item.filter((val) => {
-      return val.name.toLowerCase().indexOf(query.toLowerCase()) > -1;
-    });
+  const [loading, setLoading] = useState(true);
+  const [Query, setQuery] = useState("");
+  
+  // Currency Toggle: Default false = USD
+  const [currencyRupee, setCurrencyRupee] = useState(false);
+  
+  // CoinGecko API URL depends on currency
+  const getUrl = () => {
+      const currency = currencyRupee ? "inr" : "usd";
+      return `https://api.coingecko.com/api/v3/coins/markets?vs_currency=${currency}&order=market_cap_desc&per_page=100&page=1&sparkline=true`;
   };
 
-  const [Query, setQuery] = useState("");
-  console.log(Query);
-  const filtered = getFilteredItem(Query, info);
+  useEffect(() => {
+    setLoading(true);
+    axios.get(getUrl())
+      .then((response) => {
+        setinfo(response.data);
+        setLoading(false);
+      })
+      .catch((err) => {
+          console.error(err);
+          setLoading(false);
+      });
+  }, [currencyRupee]);
 
-  console.log(filtered);
+  const filtered = info.filter((item) => 
+      item.name.toLowerCase().includes(Query.toLowerCase())
+  );
 
   return (
-    <div className="pt-[100px] bg-[#171b26] ">
-      <div className="w-[100px] grad_bg blur-[220px]  right-[10px] h-[100px] absolute border-2 rounded-full"></div>
+    <div className="pt-24 min-h-screen pb-10">
+      
+      {/* Search & Toggle Header */}
+      <div className="w-[90%] md:w-[70%] mx-auto sticky top-[80px] z-40 mb-8">
+        <div className="bg-[#0f111a] p-2 rounded-2xl border border-gray-800 flex flex-col md:flex-row justify-between items-center gap-4 shadow-2xl">
+            
+            <input
+              type="text"
+              placeholder="Search crypto..."
+              className="w-full md:flex-1 bg-[#0a0b14] border border-blue-500/50 focus:border-blue-500 rounded-xl px-6 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-colors"
+              onChange={(e) => setQuery(e.target.value)}
+            />
 
-      <div className="  p-7 w-[70%] sticky top-[70px] bg-[#1b202d] mx-auto text-center ">
-        <div className="">
-          <input
-            id="searchInput"
-            type="text"
-            placeholder="Search crypto here"
-            className="w-[90%] rounded-md p-2 font-semibold"
-            // value={Query}
-            onChange={(e) => {
-              setQuery(e.target.value);
-            }}
-          />
+            {/* Currency Toggle */}
+            <div className="bg-[#0a0b14] p-1.5 rounded-xl border border-gray-800 flex gap-1 shrink-0">
+                <button 
+                    onClick={() => setCurrencyRupee(false)}
+                    className={`px-6 py-2.5 rounded-lg text-sm font-bold transition-colors ${!currencyRupee ? 'bg-blue-600 text-white' : 'text-gray-400 hover:text-gray-300'}`}
+                >
+                    USD ($)
+                </button>
+                <button 
+                    onClick={() => setCurrencyRupee(true)}
+                    className={`px-6 py-2.5 rounded-lg text-sm font-bold transition-colors ${currencyRupee ? 'bg-blue-600 text-white' : 'text-gray-400 hover:text-gray-300'}`}
+                >
+                    INR (₹)
+                </button>
+            </div>
+
         </div>
       </div>
-      <div className="w-[70%] mx-auto min-h-screen bg-[#1b202d] p-6 items-center">
-        <div className="">
-          <div className=" grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 mx-auto ">
-            {filtered.map((value, key) => {
-              return (
-                <div>
-                  <Link
-                    to={{
-                      pathname: "/coin",
-                      hash: `${value.name}`,
-                    }}
-                    state={{ value }}
-                  >
-                    {/* <Link
-                    to={{
-                      pathname: "/coin",
-                      hash: `${value.name}`,
-                    }}
-                    state={{ name: `${value.name}`, Symbol: `${value.symbol}` }}
-                  > */}
-                    <div className="bg-[#1b202d] rounded-md shadow-md p-5 shadow-[#000000be]  m-3 w-[180px] border-t-2 border-[#00000050]">
-                      <div className=" mx-auto w-[100px] h-[100px] ">
-                        <img src={value.image} alt=""></img>
-                      </div>
-                      <div className="p-1 text-center text-white font-medium">
-                        <h3>Name- {value.name}</h3>
-                        <p>Value- {value.current_price}</p>
-                        <h3>Up- {value.high_24h}</h3>
-                        <h3>Down- {value.low_24h}</h3>
-                      </div>
-                    </div>
-                  </Link>
+
+      {/* Grid Content */}
+      <div className="w-[90%] md:w-[70%] mx-auto">
+        {loading ? (
+             <div className="flex justify-center p-20">
+                <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-blue-500"></div>
+             </div>
+        ) : (
+            <div className="grid grid-cols-1 gap-4">
+                {filtered.map((value) => (
+                <div
+                    key={value.id}
+                    className="glass-card p-4 transition-all duration-300 hover:bg-[#1f2937]/60 border border-gray-800 hover:border-blue-500/50 flex flex-row items-center justify-between gap-4 relative overflow-hidden group"
+                >
+                    {/* Glow Effect */}
+                    <div className="absolute inset-0 bg-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+
+                    {/* Clickable Coin Details Area */}
+                    <Link 
+                        to="/coin" 
+                        state={{ value, id: location.state?.id }}
+                        className="flex-1 flex items-center justify-between gap-4 z-10"
+                    >
+                        {/* Identity */}
+                        <div className="flex items-center gap-4">
+                            <img src={value.image} alt={value.name} className="w-12 h-12 rounded-full shadow-lg" />
+                            <div className="text-left">
+                                <h3 className="text-lg font-bold text-white leading-tight group-hover:text-blue-400 transition-colors">{value.name}</h3>
+                                <div className="flex items-center gap-2">
+                                    <span className="text-gray-400 text-xs uppercase font-medium">{value.symbol}</span>
+                                    <span className={`text-xs font-bold px-1.5 py-0.5 rounded ${value.price_change_percentage_24h > 0 ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
+                                        {value.price_change_percentage_24h?.toFixed(2)}%
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Price */}
+                        <div className="text-right min-w-[100px]">
+                             <div className="text-gray-500 text-[10px] font-bold uppercase tracking-wider mb-0.5">Price</div>
+                             <div className="text-lg font-bold text-white">
+                                {currencyRupee 
+                                    ? value.current_price.toLocaleString("en-IN", { style: "currency", currency: "INR" }) 
+                                    : value.current_price.toLocaleString("en-US", { style: "currency", currency: "USD" })
+                                }
+                             </div>
+                        </div>
+                    </Link>
+
+                    {/* Buy Button */}
+                    <Link
+                        to="/coin"
+                        state={{ value, id: location.state?.id }}
+                        className="z-10 px-6 py-2 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white text-sm font-bold rounded-lg shadow-lg shadow-green-500/20 hover:shadow-green-500/40 hover:scale-105 transition-all duration-300 active:scale-95"
+                    >
+                        Buy
+                    </Link>
+
                 </div>
-              );
-            })}
-          </div>
-        </div>
+                ))}
+            </div>
+        )}
       </div>
+
     </div>
   );
 }

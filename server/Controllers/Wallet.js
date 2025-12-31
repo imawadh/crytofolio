@@ -3,7 +3,7 @@ const mongoose = require("mongoose");
 const Transaction = require("../models/Transactions"); //we select the table
 const Wallet = require("../models/Wallet"); //we select the table
 const jwt = require("jsonwebtoken");
-const jwtSecret = "abcdefghijklmnopqrstuvwxyz";
+const jwtSecret = process.env.JWT_SECRET;
 
 const getwalletAmount = async (req, res) => {
   console.log(req.body);

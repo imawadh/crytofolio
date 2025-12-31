@@ -10,7 +10,7 @@ const { body, validationResult } = require("express-validator");
 
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-const jwtSecret = "abcdefghijklmnopqrstuvwxyz";
+const jwtSecret = process.env.JWT_SECRET;
 
 router.post(
   "/creatuser",
@@ -51,7 +51,7 @@ router.post(
         
         await Wallet.create({
           UserId: userdata._id,
-          Amount: 100000,
+          Amount: 10000,
           Invested:0,
         }).then(console.log("wallet created"));
 

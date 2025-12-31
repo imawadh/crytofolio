@@ -1,194 +1,169 @@
 import React, { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 export default function CoinInfo({ state, open }) {
   const navigate = useNavigate();
   const data = state.value;
-  console.log(data);
-  const [Coindata, setCoindata] = useState({});
-  const [currencyRupee, setcurrencyRupee] = useState(true);
-  const [clicked, setclicked] = useState(false);
+  // Default to USD (false means USD, previously logic was true=Rupee)
+  const [currencyRupee, setcurrencyRupee] = useState(false);
+  
+  const [displayData, setDisplayData] = useState({});
 
   const login = localStorage.getItem("authToken");
 
-  const check = () => {
-    console.log("------------------------------------");
-    console.log(clicked);
-    console.log(login);
-    if (login && clicked) {
-      navigate("/transaction", { state: { data } });
-    }
-  };
-
   const handlebuy = () => {
-    setclicked(true);
     if (login) {
-      navigate("/transaction", { state: { data } });
-      console.log(login);
+      navigate("/transaction", { state: { data, id: state.id } });
     } else {
       open[1](true);
     }
-    
   };
 
   const handlesell = () => {
-    setclicked(true);
     if (login) {
-      navigate("/transactionSell", { state: { data } });
-      console.log(login);
+      navigate("/transactionSell", { state: { data, id: state.id } });
     } else {
       open[1](true);
     }
-    
   };
 
   useEffect(() => {
-    if (currencyRupee === true) {
-      setCoindata({
-        current_price: ((`${data.current_price}` / 100) * 70).toLocaleString(
-          "en-IN",
-          {
-            maximumFractionDigits: 2,
-            style: "currency",
-            currency: "INR",
-          }
-        ),
-        high: ((`${data.high_24h}` / 100) * 70).toLocaleString("en-IN", {
-          maximumFractionDigits: 2,
+    // Exchange rate assumption: 1 USD ~ 84 INR
+    const rate = 84; 
+
+    if (currencyRupee) {
+      setDisplayData({
+        current_price: (data.current_price * rate).toLocaleString("en-IN", {
           style: "currency",
           currency: "INR",
         }),
-        low: ((`${data.low_24h}` / 100) * 70).toLocaleString("en-IN", {
-          maximumFractionDigits: 2,
+        high: (data.high_24h * rate).toLocaleString("en-IN", {
           style: "currency",
           currency: "INR",
         }),
-        priceChange: ((`${data.price_change_24h}` / 100) * 70).toLocaleString(
-          "en-IN",
-          {
-            maximumFractionDigits: 2,
-            style: "currency",
-            currency: "INR",
-          }
-        ),
-        pricePercentageChange: `${data.price_change_percentage_24h}`,
+        low: (data.low_24h * rate).toLocaleString("en-IN", {
+          style: "currency",
+          currency: "INR",
+        }),
+        priceChange: (data.price_change_24h * rate).toLocaleString("en-IN", {
+          style: "currency",
+          currency: "INR",
+        }),
+        pricePercentageChange: data.price_change_percentage_24h,
       });
     } else {
-      setCoindata({
-        current_price: (`${data.current_price}` / 100).toLocaleString("en-US", {
-          maximumFractionDigits: 2,
+      setDisplayData({
+        current_price: data.current_price.toLocaleString("en-US", {
           style: "currency",
           currency: "USD",
         }),
-        high: (`${data.high_24h}` / 100).toLocaleString("en-US", {
-          maximumFractionDigits: 2,
+        high: data.high_24h.toLocaleString("en-US", {
           style: "currency",
           currency: "USD",
         }),
-        low: (`${data.low_24h}` / 100).toLocaleString("en-US", {
-          maximumFractionDigits: 2,
+        low: data.low_24h.toLocaleString("en-US", {
           style: "currency",
           currency: "USD",
         }),
-        priceChange: (`${data.price_change_24h}` / 100).toLocaleString(
-          "en-IN",
-          {
-            maximumFractionDigits: 2,
-            style: "currency",
-            currency: "USD",
-          }
-        ),
-        pricePercentageChange: `${data.price_change_percentage_24h}`,
+        priceChange: data.price_change_24h.toLocaleString("en-US", {
+          style: "currency",
+          currency: "USD",
+        }),
+        pricePercentageChange: data.price_change_percentage_24h,
       });
     }
-    check();
-    
-  }, [currencyRupee,login]);
-
-  console.log(currencyRupee);
-  console.log(Coindata);
-  // console.log(data.price_change_24h);
+  }, [currencyRupee, data]);
 
   return (
-    <div className=" bg-[#1d2230] w-fit p-10 rounded-xl text-white mx-auto mt-10 mb-10">
-      <div className="grid grid-cols-1 sm:grid-cols-2   space-x-0">
-        <div className=" w-fit md:w-[50%] mx-auto bg-[#171b26] rounded-xl pt-3">
-          <div className="flex justify-center">
-            <div className="font-semibold w-[100px] text-center  text-[20px]">
-              {data.name}
+    <div className="glass-card w-full max-w-5xl mx-auto mt-8 mb-12 p-6">
+      <div className="flex flex-col md:flex-row justify-center items-center gap-10">
+        
+        {/* Identity */}
+        <div className="flex flex-col items-center justify-center space-y-4 md:w-1/3">
+            <div className="relative group">
+                <div className="absolute -inset-4 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full opacity-20 group-hover:opacity-40 blur-xl transition duration-500"></div>
+                <img 
+                    className="w-24 h-24 relative z-10 transition-transform duration-300 group-hover:scale-110" 
+                    src={data.image} 
+                    alt={data.name} 
+                />
             </div>
-          </div>
-          <div className="w-fit mx-auto">
-            <img className="w-[100px] h-[100px] p-5" src={data.image}></img>
-          </div>
-        </div>
-        <div className=" w-fit flex justify-center flex-col bg-[#171b26] rounded-xl pt-3 pr-5 p-4 m-2">
-          <div className="font-semibold  text-center text-[12px] flex md:text-[18px]  justify-between m-1">
-            <div>Current Price:</div>
-            <div className="font-semibold w-[100px]  text-[13px] md:text-[18px] md:ml-3 ">
-              {data.priceChange >= 0 ? (
-                <div className="text-[#26a69a]">{Coindata.current_price}</div>
-              ) : (
-                <div className="text-[#c12f3d]">{Coindata.current_price}</div>
-              )}
+            <h2 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400">
+                {data.name}
+            </h2>
+            <div className="px-3 py-1 rounded-full bg-gray-800 border border-gray-700 text-xs text-gray-400 uppercase tracking-widest">
+                {data.symbol}
             </div>
-          </div>
-          <div className="font-semibold   text-center text-[12px] md:text-[18px]  flex justify-between  m-1">
-            <div>High Price:</div>
-            <div className="font-semibold w-[100px]  text-[13px]  ml-3 md:text-[18px] md:ml-3 ">
-              {Coindata.high}
-            </div>
-          </div>
-          <div className="font-semibold   text-center text-[12px]  md:text-[18px] flex justify-between  m-1">
-            <div>Low Price:</div>
-            <div className="font-semibold w-[100px]  text-[13px]  ml-3 md:text-[18px] md:ml-3 ">
-              {Coindata.low}
-            </div>
-          </div>
-          <div className="font-semibold   text-center text-[12px] md:text-[18px]  flex justify-between  m-1">
-            Price Change:
-            <div className="font-semibold w-[100px]  text-[13px]  ml-3  md:text-[18px] md:ml-3">
-              {data.priceChange > 0 ? (
-                <div className="text-[#26a69a]">{Coindata.priceChange}</div>
-              ) : (
-                <div className="text-[#c12f3d]">{Coindata.priceChange}</div>
-              )}
-            </div>
-          </div>
-
-          <div className="w-[100%]  grid grid-cols-1 sm:grid-cols-2 ">
-            <button
-              className={`${
-                currencyRupee ? "bg-[#209fe4] " : "bg-[#209fe423] text-[12px]"
-              } p-1 m-2  rounded-md font-semibold text-[12px] md:text-[15px]`}
-              onClick={() => {
-                setcurrencyRupee(true);
-              }}
-            >
-              RUPEE
-            </button>
-            <button
-              className={`${
-                currencyRupee ? "bg-[#209fe423] text-[12px]" : "bg-[#209fe4] "
-              } p-1 m-2 rounded-md font-semibold text-[12px] md:text-[15px]`}
-              onClick={() => {
-                setcurrencyRupee(false);
-              }}
-            >
-              DOLLAR
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <div className="w-[50%] mt-5 mx-auto grid grid-cols-1 sm:grid-cols-2 ">
-        <div className=" w-[100px] mx-auto text-center p-2 m-2 rounded-md  bg-[#26a69a] text-white   text-[14px] md:text-[18px] font-semibold hover:translate-y-[-6px]">
-          <button onClick={handlebuy}>BUY</button>
         </div>
 
-        <div className=" w-[100px] mx-auto text-center  p-2 m-2 rounded-md bg-[#c12f3d] text-white  text-[14px] md:text-[18px] font-semibold hover:translate-y-[-6px]">
-          <button onClick={handlesell}>SELL</button>
+        {/* Stats Card */}
+        <div className="bg-[#1f2937]/30 rounded-2xl p-6 border border-gray-700/50 backdrop-blur-sm w-full md:w-2/3 max-w-md">
+            {/* Stats Grid */}
+            <div className="space-y-3 mb-6">
+                <div className="flex justify-between items-center pb-2 border-b border-gray-700/50">
+                    <span className="text-gray-400 font-medium text-sm">Current Price</span>
+                    <span className={`text-xl font-bold ${data.price_change_24h >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                        {displayData.current_price}
+                    </span>
+                </div>
+
+                <div className="flex justify-between items-center text-xs">
+                    <span className="text-gray-500">24h High</span>
+                    <span className="text-gray-200 font-mono">{displayData.high}</span>
+                </div>
+
+                <div className="flex justify-between items-center text-xs">
+                    <span className="text-gray-500">24h Low</span>
+                    <span className="text-gray-200 font-mono">{displayData.low}</span>
+                </div>
+
+                <div className="flex justify-between items-center pt-2 border-t border-gray-700/50">
+                    <span className="text-gray-400 text-sm">Price Change (24h)</span>
+                    <div className="text-right">
+                        <div className={`font-bold text-sm ${data.price_change_24h >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                            {displayData.priceChange}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* Currency Toggle */}
+            <div className="flex bg-gray-900/50 p-1 rounded-lg mb-6">
+                <button
+                className={`flex-1 py-1.5 rounded-md text-xs font-medium transition-all duration-300 ${
+                    !currencyRupee ? "bg-blue-600 text-white shadow-lg shadow-blue-500/20" : "text-gray-400 hover:text-white"
+                }`}
+                onClick={() => setcurrencyRupee(false)}
+                >
+                USD ($)
+                </button>
+                <button
+                className={`flex-1 py-1.5 rounded-md text-xs font-medium transition-all duration-300 ${
+                    currencyRupee ? "bg-blue-600 text-white shadow-lg shadow-blue-500/20" : "text-gray-400 hover:text-white"
+                }`}
+                onClick={() => setcurrencyRupee(true)}
+                >
+                INR (₹)
+                </button>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="grid grid-cols-2 gap-3">
+                <button 
+                    onClick={handlebuy}
+                    className="btn-primary py-2 text-base font-bold shadow-lg shadow-blue-500/25 active:scale-95 transition-transform"
+                >
+                    BUY
+                </button>
+                <button 
+                    onClick={handlesell}
+                    className="btn-secondary py-2 text-base font-bold border-red-500/30 text-red-100 hover:bg-red-500/10 active:scale-95 transition-transform"
+                >
+                    SELL
+                </button>
+            </div>
         </div>
+
       </div>
     </div>
   );
