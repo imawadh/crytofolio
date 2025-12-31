@@ -18,6 +18,9 @@ app.use(cors({
   methods: ['DELETE', 'GET', 'PUT', 'POST'],
   credentials: true
 }));
+app.get("/", (req, res) => {
+  res.send("Crypto Portfolio API is running 🚀");
+});
 
 app.use(express.json());
 app.use("/dashboard", dashboardRouter);
