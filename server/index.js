@@ -34,7 +34,7 @@ app.use("/wallet", require("./Routes/Wallet"));
 //---------------mongoose connection----------------//
 
 const Connection_url = process.env.DATABASE_URI;
-const PORT = 5000; 
+const PORT = process.env.PORT; 
 
 
 //here are routes for backend calls
