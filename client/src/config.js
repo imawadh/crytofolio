@@ -1,5 +1,5 @@
 const config = {
-  BASE_URL: process.env.REACT_APP_BASE_URL || "http://localhost:5000",
+  BASE_URL: process.env.REACT_APP_BASE_URL || "https://task-cryptopolio.onrender.com",
 };
 
 export default config;
