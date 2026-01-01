@@ -14,7 +14,7 @@ app.use(bodyParser.urlencoded({ limit: "30mb", extended: true }));
 
 // Update CORS to allow localhost:3002 and others
 app.use(cors({
-  origin: ["http://localhost:3000", "http://localhost:3002", "http://127.0.0.1:3000"],
+  origin: ["http://localhost:3000", "https://task-cryptopolio-main-two.vercel.app/"],
   methods: ['DELETE', 'GET', 'PUT', 'POST'],
   credentials: true
 }));
