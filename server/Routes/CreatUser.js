@@ -78,6 +78,7 @@ router.post(
       // console.log("hello_value created");
     } catch (error) {
       console.log(error);
+      res.status(500).json({ success: false, error: 'Server error' });
     }
   }
 );

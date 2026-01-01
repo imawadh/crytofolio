@@ -22,6 +22,10 @@ router.post(
       // console.log(userdata.password);
       console.log({ userdata });
 
+      if (!userdata) {
+        return res.status(400).send("No such user found");
+      }
+
       const data = {
         user: {
           id: userdata._id,
@@ -31,13 +35,14 @@ router.post(
 
       const comparepswd = await bcrypt.compare(pswd, userdata.password);
       console.log(comparepswd);
-      if (userdata && comparepswd) {
+      if (comparepswd) {
         res.send({ userdata, authToken });
       } else {
-        res.send("No such user found");
+        res.status(400).send("incorrect password");
       }
     } catch (error) {
       console.log(error);
+      res.status(500).json({ success: false, error: error.message });
     }
   }
 );
