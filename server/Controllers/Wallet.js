@@ -6,47 +6,47 @@ const jwt = require("jsonwebtoken");
 const jwtSecret = process.env.JWT_SECRET;
 
 const getwalletAmount = async (req, res) => {
-  console.log(req.body);
-  const authToken = req.body.login;
-  const userdata = jwt.verify(authToken, jwtSecret);
-  console.log(userdata.user.id);
-  console.log("we will get amount");
+  try {
+    const authToken = req.body.login;
+    if (!authToken) return res.status(401).send("No token");
 
-  await Wallet.find({ UserId: userdata.user.id }).then(async (data) => {
-    console.log(data);
-    res.send(data);
-  });
-  // .then(async(data) => {
-  //   console.log("updated");
-  //   console.log(data);
-  // })
-  // .catch();
-};
-const getallTransaction = async (req, res) => {
-  console.log(req.body);
-  const authToken = req.body.login;
-  const userdata = jwt.verify(authToken, jwtSecret);
-  console.log(userdata.user.id);
-  console.log("we will get all Transaction");
-
-  let dataempty=[];
-  await Transaction.find({ UserId: userdata.user.id }).then(async (data) => {
-    console.log(
-      "-----------------------------we will get all Transaction--------------------------------------"
-    );
-    if(data.length!==0){
-
-      console.log(data[0].Transaction);
-      res.send(data[0].Transaction);
-    }else{
-      res.send(dataempty);
+    let userdata;
+    try {
+      userdata = jwt.verify(authToken, jwtSecret);
+    } catch (err) {
+      return res.status(401).send("Invalid Token");
     }
-  });
-  // .then(async(data) => {
-  //   console.log("updated");
-  //   console.log(data);
-  // })
-  // .catch();
+
+    const data = await Wallet.find({ UserId: userdata.user.id });
+    res.send(data);
+  } catch (error) {
+    console.error("Error in getwalletAmount:", error);
+    res.status(500).send("ERROR");
+  }
+};
+
+const getallTransaction = async (req, res) => {
+  try {
+    const authToken = req.body.login;
+    if (!authToken) return res.status(401).send("No token");
+
+    let userdata;
+    try {
+      userdata = jwt.verify(authToken, jwtSecret);
+    } catch (err) {
+      return res.status(401).send("Invalid Token");
+    }
+
+    const data = await Transaction.find({ UserId: userdata.user.id });
+    if (data.length !== 0) {
+      res.send(data[0].Transaction);
+    } else {
+      res.send([]);
+    }
+  } catch (error) {
+    console.error("Error in getallTransaction:", error);
+    res.status(500).send("ERROR");
+  }
 };
 
 module.exports = { getwalletAmount, getallTransaction };

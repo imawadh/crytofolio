@@ -1,15 +1,13 @@
 {
   "dependencies": {
     "express-validator": "^6.15.0",
-    "mongoose-type-email": "^1.1.2",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "react-router-dom": "^6.9.0"
+    "mongoose-type-email": "^1.1.2"
   },
   "scripts": {
     "start": "concurrently \"npm run server\" \"npm run client\"",
     "server": "cd server && npm start",
-    "client": "cd client && npm start",
+    "client": "cd client && npm run dev",
+    "build": "cd client && npm install && npm run build",
     "install-dependencies": "cd client && npm install && cd ../server && npm install"
   },
   "devDependencies": {

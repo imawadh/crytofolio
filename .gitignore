@@ -34,3 +34,10 @@ out/
 
 # Testing
 coverage/
+
+# Claude Code / agent tooling (machine-local)
+.claude/
+.agents/
+client/.agents/
+skills-lock.json
+client/skills-lock.json

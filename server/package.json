@@ -23,5 +23,8 @@
     "mongoose-type-email": "^1.1.2",
     "nodemon": "^2.0.20",
     "request": "^2.88.2"
+  },
+  "devDependencies": {
+    "mongodb-memory-server": "^11.1.0"
   }
 }

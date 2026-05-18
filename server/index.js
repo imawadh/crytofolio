@@ -36,22 +36,42 @@ app.use("/wallet", require("./Routes/Wallet"));
 
 //---------------mongoose connection----------------//
 
-const Connection_url = process.env.DATABASE_URI;
-const PORT = process.env.PORT; 
-
-
-//here are routes for backend calls
-//---------------mongoose connection----------------//
-mongoose.connect(Connection_url, { useNewUrlParser: true, useUnifiedTopology: true })
-  .then(() => console.log("Database connected"))
-  .catch((error) => console.log("Database connection error:", error.message));
-
-app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-});
-
+const PORT = process.env.PORT || 5000;
 
 mongoose.set("strictQuery", true);
+
+async function connectDatabase() {
+  let uri = process.env.DATABASE_URI;
+
+  // Local-dev fallback: if no DATABASE_URI is configured (e.g. no .env),
+  // spin up an in-memory MongoDB so the app works without external infra.
+  // Set DATABASE_URI (e.g. a MongoDB Atlas string) for a persistent DB.
+  if (!uri) {
+    const { MongoMemoryServer } = require("mongodb-memory-server");
+    const mem = await MongoMemoryServer.create();
+    uri = mem.getUri();
+    console.log(
+      "⚠ No DATABASE_URI set — started an in-memory MongoDB for local dev (data is NOT persisted across restarts)."
+    );
+  }
+
+  await mongoose.connect(uri, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  });
+  console.log("Database connected");
+}
+
+connectDatabase()
+  .then(() => {
+    app.listen(PORT, () => {
+      console.log(`Server running on port ${PORT}`);
+    });
+  })
+  .catch((error) => {
+    console.error("Database connection error:", error.message);
+    process.exit(1);
+  });
 
 
 

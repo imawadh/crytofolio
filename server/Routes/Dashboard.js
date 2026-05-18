@@ -8,14 +8,12 @@ const jwtSecret = process.env.JWT_SECRET;
 const { fetchuser } = require("../middleware/fetchuser");
 
 router.post("/dashboard", fetchuser, async (req, res) => {
-  console.log("dashboard data")
-  const id = req.user.id;
-  console.log(id);
-
-  const userdata = await User.find({ _id: id })
-    .select("-password")
-    .select("-mob");
-  // console.log(userdata);
-  res.send({id:id})
+  try {
+    const id = req.user.id;
+    res.send({ id: id });
+  } catch (error) {
+    console.error("Error in /dashboard:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
 });
 module.exports = router;

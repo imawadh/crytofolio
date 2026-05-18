@@ -3,13 +3,15 @@ const mongoose = require("mongoose");
 const walletSchema = new mongoose.Schema({
   UserId: {
     type: String,
-    require: true,
+    required: true,
   },
   Amount: {
     type: Number,
+    default: 0,
   },
   Invested: {
     type: Number,
+    default: 0,
   },
 });
 

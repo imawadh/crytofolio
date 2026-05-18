@@ -1,19 +1,17 @@
 const jwt = require("jsonwebtoken");
 const jwtSecret = process.env.JWT_SECRET;
-const User = require("../models/User");
 
-const fetchuser = (req, res,next) => {
-//   console.log(req.body);
+const fetchuser = (req, res, next) => {
   const authToken = req.body.Token;
   if (!authToken) {
-    console.log("tokennotfound");
+    return res.status(401).json({ error: "No authentication token provided" });
   }
   try {
     const data = jwt.verify(authToken, jwtSecret);
-    req.user=data.user;
+    req.user = data.user;
     next();
-   //  console.log(req.user);
-    
-  } catch (e) {}
+  } catch (e) {
+    return res.status(401).json({ error: "Invalid authentication token" });
+  }
 };
 module.exports = { fetchuser };

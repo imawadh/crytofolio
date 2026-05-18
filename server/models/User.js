@@ -5,30 +5,29 @@ require('mongoose-type-email');
 const userSchema=new mongoose.Schema({
     first_name:{
         type:String,
-        require:true,
-        maxlenght:50
+        required:true,
+        maxlength:50
     },
     last_name:{
         type:String,
-        require:true,
-        maxlenght:50
+        required:true,
+        maxlength:50
     },
     age:{
-        type:Number,
-        require:true
+        type:Number
     },
     mob:{
-        type:Number,
-        require:true
+        type:Number
     },
     email:{
         type:String,
-        require:true
+        required:true,
+        unique:true
     },
     password:{
         type:String,
-        minlenght:5,
-        require:true
+        minlength:5,
+        required:true
     }
 });
 
