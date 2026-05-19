@@ -41,3 +41,5 @@ coverage/
 client/.agents/
 skills-lock.json
 client/skills-lock.json
+
+.early.coverage
