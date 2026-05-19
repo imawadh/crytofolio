@@ -1,89 +1,79 @@
-const express = require("express");
-const router = express.Router();
-const mongoose = require("mongoose");
-const Transaction = require("../models/Transactions"); // renamed to TitleCase for convention
+// Handles a virtual BUY: checks wallet balance, debits it, and records the trade.
+
+const Transaction = require("../models/Transactions");
 const Wallet = require("../models/Wallet");
 const jwt = require("jsonwebtoken");
-const jwtSecret = process.env.JWT_SECRET;
 
 const UserTransactions = async (req, res) => {
   try {
-    console.log(req.body);
-    console.log("======================================================");
     const newTransactionItem = req.body.Transaction;
     const cost = Number(req.body.Amount);
 
     const authToken = req.body.login;
     if (!authToken) return res.status(401).send("No token");
-    
+
     let data;
     try {
-        data = jwt.verify(authToken, jwtSecret);
+      data = jwt.verify(authToken, process.env.JWT_SECRET);
     } catch (err) {
-        return res.status(401).send("Invalid Token");
+      return res.status(401).send("Invalid Token");
     }
-    
-    console.log("data come for buy/sell", data.user.id);
     const userId = data.user.id;
 
-    // 1. Check Wallet Balance
+    if (!newTransactionItem || !Number.isFinite(cost) || cost <= 0) {
+      return res.status(400).send("Invalid transaction");
+    }
+
+    // 1. Check wallet balance.
     const wallet = await Wallet.findOne({ UserId: userId });
-    
     if (!wallet) {
-        return res.send("NO_WALLET");
+      return res.send("NO_WALLET");
     }
 
-    const currentBalance = wallet.Amount;
-    const currentInvested = wallet.Invested;
+    if (wallet.Amount < cost) {
+      return res.send("NO");
+    }
 
-    console.log("Current Balance:", currentBalance);
-
-    if (currentBalance >= cost) {
-      // 2. Update Wallet (Deduct Balance, Add to Invested)
-      await Wallet.findOneAndUpdate(
-        { UserId: userId },
-        {
-          Invested: Number(currentInvested) + cost,
-          Amount: Number(currentBalance) - cost,
-        }
-      );
-      console.log("Balance updated. New Balance:", Number(currentBalance) - cost);
-
-      // 3. Add Transaction
-      // Check if transaction document exists for user, if not create one, else push
-      const userTransactionParams = {
-          img: newTransactionItem.img,
-          CoinId: newTransactionItem.CoinId,
-          CoinName: newTransactionItem.CoinName,
-          Quantity: newTransactionItem.Quantity,
-          Amount: newTransactionItem.Amount,
-          Prise: newTransactionItem.Prise,
-          Date: newTransactionItem.Date,
-          type: newTransactionItem.type
-      };
-
-      const existingTransactionDoc = await Transaction.findOne({ UserId: userId });
-
-      if (existingTransactionDoc) {
-          await Transaction.findOneAndUpdate(
-              { UserId: userId },
-              { $push: { Transaction: userTransactionParams } }
-          );
-          console.log("Transaction pushed to existing history");
-      } else {
-          await Transaction.create({
-              UserId: userId,
-              Transaction: [userTransactionParams]
-          });
-          console.log("New Transaction document created");
+    // 2. Update wallet: deduct balance, add to invested.
+    await Wallet.findOneAndUpdate(
+      { UserId: userId },
+      {
+        Invested: Number(wallet.Invested) + cost,
+        Amount: Number(wallet.Amount) - cost,
       }
+    );
 
-      res.send("YES");
+    // 3. Record the transaction (create the history doc if it's the first one).
+    const userTransactionParams = {
+      img: newTransactionItem.img,
+      CoinId: newTransactionItem.CoinId,
+      CoinName: newTransactionItem.CoinName,
+      Quantity: newTransactionItem.Quantity,
+      Amount: newTransactionItem.Amount,
+      Prise: newTransactionItem.Prise,
+      Date: newTransactionItem.Date,
+      type: newTransactionItem.type,
+    };
+
+    const existingTransactionDoc = await Transaction.findOne({
+      UserId: userId,
+    });
+
+    if (existingTransactionDoc) {
+      await Transaction.findOneAndUpdate(
+        { UserId: userId },
+        { $push: { Transaction: userTransactionParams } }
+      );
     } else {
-      res.send("NO");
+      await Transaction.create({
+        UserId: userId,
+        Transaction: [userTransactionParams],
+      });
     }
+
+    res.send("YES");
   } catch (error) {
-    console.error("Error in UserTransactions:", error);
+    console.error("Error in UserTransactions:", error.message);
     res.status(500).send("ERROR");
   }
 };
