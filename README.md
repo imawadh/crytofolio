@@ -47,7 +47,7 @@ npm start
 - Client: http://localhost:3000
 - Server: http://localhost:5000
 
-### Backend smoke test
+### Backend tests
 
 With the server running:
 
@@ -55,7 +55,15 @@ With the server running:
 node test_backend.js
 ```
 
-This exercises register → buy → sell → wallet and verifies the balance.
+This end-to-end suite covers every API endpoint — registration, login, auth,
+profile, wallet, and buy/sell transactions — plus error cases.
+
+Test accounts use the `@cryptopolio.test` email domain. If you run the suite
+against a real database, remove the test data afterwards:
+
+```bash
+cd server && node cleanup_test_data.js
+```
 
 ## Environment variables
 
