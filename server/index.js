@@ -44,22 +44,21 @@ app.use(express.urlencoded({ extended: true, limit: "1mb" }));
 
 // Allowed browser origins. Configure for production via CLIENT_URL
 // (comma-separated). Localhost origins are always allowed for local dev.
+// Trailing slashes are stripped so values match the browser's Origin header.
+const stripSlash = (o) => o.trim().replace(/\/+$/, "");
 const allowedOrigins = [
   "http://localhost:3000",
   "http://127.0.0.1:3000",
   ...(process.env.CLIENT_URL
-    ? process.env.CLIENT_URL.split(",").map((o) => o.trim()).filter(Boolean)
-    : [
-        "https://task-cryptopolio-main-two.vercel.app",
-        "https://task-cryptopolio-main-ypy5.onrender.com",
-      ]),
+    ? process.env.CLIENT_URL.split(",").map(stripSlash).filter(Boolean)
+    : ["https://crytofolio.vercel.app"]),
 ];
 
 app.use(
   cors({
     origin: (origin, callback) => {
       // Allow non-browser clients (curl, server-to-server, health checks).
-      if (!origin || allowedOrigins.includes(origin)) {
+      if (!origin || allowedOrigins.includes(stripSlash(origin))) {
         return callback(null, true);
       }
       return callback(new Error(`Origin not allowed by CORS: ${origin}`));

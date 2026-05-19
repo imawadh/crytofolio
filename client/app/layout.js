@@ -20,7 +20,7 @@ const inter = Inter({
 });
 
 export const metadata = {
-  metadataBase: new URL("https://task-cryptopolio-main-two.vercel.app"),
+  metadataBase: new URL("https://crytofolio.vercel.app"),
   title: {
     default: "CryptoFolio — Master Your Digital Wealth",
     template: "%s | CryptoFolio",
