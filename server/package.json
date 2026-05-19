@@ -4,11 +4,12 @@
   "description": "CryptoPolio backend API (Express + Mongoose)",
   "main": "index.js",
   "engines": {
-    "node": ">=18"
+    "node": "22.x"
   },
   "scripts": {
     "start": "node index.js",
     "dev": "nodemon index.js",
+    "build": "echo \"No build step required for the Node server\"",
     "test": "node ../test_backend.js"
   },
   "keywords": [],
